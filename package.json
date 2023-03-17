@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js",
+    "create:db:dev": "npx sequelize-cli db:create --env development --config ./src/config/config.js",
+    "db:migrate:dev": "npx sequelize-cli db:migrate --env development --config ./src/config/config.js --migrations-path ./src/migrations",
+    "db:drop:dev": "npx sequelize-cli db:drop --env development --config ./src/config/config.js",
+    "db:seed:dev": "npx sequelize-cli db:seed:all --env development --config ./src/config/config.js --seeders-path ./src/seeders",
+    "db:reset:dev": "npm run db:drop:dev && npm run create:db:dev && npm run db:migrate:dev"
   },
   "keywords": [],
   "author": "",
