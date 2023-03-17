@@ -1,5 +1,5 @@
 const db = require("../models");
-const { hashPassword, comparePassword } = require("../helpers/password-helper");
+const { hashPassword, comparePassword } = require("./helpers/password-helper");
 
 exports.register = async (req, res) => {
   try {
@@ -17,7 +17,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await hashPassword(password);
   
     const user = await db.User.create({
-      full_naame: fullName,
+      full_name: fullName,
       email,
       password: hashedPassword
     });
@@ -27,9 +27,9 @@ exports.register = async (req, res) => {
         message: "Something went wrong. Please try again."
       });
     }
-    console.log(user);
     res.status(201).json({
-      message: "User created successfully."
+      message: "User created successfully.",
+      data: user
     });
   } catch (error) {
     console.log(error);
