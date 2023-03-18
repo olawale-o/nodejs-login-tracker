@@ -3,7 +3,7 @@ const db = require("../models");
 const transformResponse = require("../common/transform-response");
 const { hashPassword, comparePassword } = require("./helpers/password-helper");
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
   try {
     const { fullName, email, password } = req.body;
 
@@ -37,11 +37,11 @@ exports.register = async (req, res) => {
       message: "User created successfully.",
     });
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const isFound = await db.User.findOne({
@@ -131,6 +131,6 @@ exports.login = async (req, res) => {
     })
 
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
