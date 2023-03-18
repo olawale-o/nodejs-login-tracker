@@ -1,5 +1,6 @@
 const moment = require("moment");
 const db = require("../models");
+const transformResponse = require("../common/transform-response");
 const { hashPassword, comparePassword } = require("./helpers/password-helper");
 
 exports.register = async (req, res) => {
@@ -24,13 +25,16 @@ exports.register = async (req, res) => {
     });
   
     if (!user) {
-      return res.status(500).json({
+      transformResponse({
+        statusCode: 500,
+        res,
         message: "Something went wrong. Please try again."
-      });
+      })
     }
-    res.status(201).json({
+    transformResponse({
+      statusCode: 201,
+      res,
       message: "User created successfully.",
-      data: user
     });
   } catch (error) {
     console.log(error);
@@ -44,7 +48,9 @@ exports.login = async (req, res) => {
       where: { email }
     });
     if (!isFound) {
-      return res.status(400).json({
+      transformResponse({
+        statusCode: 400,
+        res,
         message: "Invalid email or password."
       });
     }
@@ -54,8 +60,10 @@ exports.login = async (req, res) => {
         isFound.is_locked &&
         moment().isBefore(isFound.next_unlock_time)
       ) {
-      return res.status(400).json({
-        message: "Your account will be locked for life.",
+        transformResponse({
+        statusCode: 400,
+        res,
+        message: "Your account will be locked for life."
       });
     }
 
@@ -81,9 +89,11 @@ exports.login = async (req, res) => {
     }
 
     if (isPasswordValid && isFound.is_locked && moment().isBefore(isFound.next_unlock_time)) {
-      return res.status(400).json({
-        message: "You cannot login at the momment.",
-      });
+      transformResponse({
+        statusCode: 400,
+        res,
+        message: "You cannot login at the momment."
+      })
     }
 
     if (!isPasswordValid) {
@@ -92,16 +102,20 @@ exports.login = async (req, res) => {
           is_locked: true,
           next_unlock_time: moment().add(1, "minutes").valueOf()
         }, {where: {email}});
-        return res.status(400).json({
-          message: "Your account has been locked for 1 minute.",
+        transformResponse({
+          statusCode: 400,
+          res,
+          message: "Your account has been locked for 1 minute."
         });
       } else {
         await db.User.update({
           login_attempts: isFound.login_attempts + 1,
         }, {where: {email}});
-        return res.status(400).json({
-          message: "Invalid email or password.",
-        });
+        transformResponse({
+          statusCode: 400,
+          res,
+          message: "Invalid email or password."
+        })
       }
     }
     await db.User.update({
@@ -110,10 +124,11 @@ exports.login = async (req, res) => {
       next_unlock_time: null
     }, {where: {email}});
     
-    
-    return res.status(200).json({
+    transformResponse({
+      statusCode: 200,
+      res,
       message: "Login successful.",
-    });
+    })
 
   } catch (error) {
     console.log(error);
