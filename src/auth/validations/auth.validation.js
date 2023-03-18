@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const AppError = require('../../common/app-error');
 
 const registerSchema = Joi.object({
   fullName: Joi.string().required(),
