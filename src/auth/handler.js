@@ -34,7 +34,7 @@ exports.register = async (req, res, next) => {
     transformResponse({
       statusCode: 201,
       res,
-      message: "User created successfully.",
+      message: "User created successfully",
     });
   } catch (error) {
     next(error)
