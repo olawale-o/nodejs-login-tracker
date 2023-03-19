@@ -13,16 +13,17 @@ const loginSchema = Joi.object({
 });
 
 const validateRequestSchema = (schema) => (req, res, next) => {
-  const { value, error } = Joi.compile(schema).validate(req.body);
+  const { value, error } = Joi.compile(schema).validate(req.body,  { abortEarly: false });
   if (error) {
     const errorMessage = error.details
-      .map((details) => details.message)
-      .join(', ');
+      .map((details) => ({
+        [details.context.key]: details.message.replace(/"/g, ''),
+      }))
   
-    return next(new AppError(
+    throw new AppError(
       422,
       errorMessage,
-    ));
+    );
   }
   Object.assign(req, value);
   return next();
