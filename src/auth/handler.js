@@ -1,36 +1,12 @@
 const moment = require("moment");
 const db = require("../models");
+const { register } = require("./service");
 const transformResponse = require("../common/transform-response");
-const { hashPassword, comparePassword } = require("./helpers/password-helper");
+const { comparePassword } = require("./helpers/password-helper");
 
 exports.register = async (req, res, next) => {
   try {
-    const { fullName, email, password } = req.body;
-
-    const isFound = await db.User.findOne({
-      where: { email }
-    });
-  
-    if (isFound) {
-      return res.status(400).json({
-        message: "Email already exists. Please login with your credentials"
-      });
-    }
-    const hashedPassword = await hashPassword(password);
-  
-    const user = await db.User.create({
-      full_name: fullName,
-      email,
-      password: hashedPassword
-    });
-  
-    if (!user) {
-      transformResponse({
-        statusCode: 500,
-        res,
-        message: "Something went wrong. Please try again"
-      })
-    }
+    await register(req.body);
     transformResponse({
       statusCode: 201,
       res,
