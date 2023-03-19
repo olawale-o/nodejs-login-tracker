@@ -15,14 +15,14 @@ const loginSchema = Joi.object({
 const validateRequestSchema = (schema) => (req, res, next) => {
   const { value, error } = Joi.compile(schema).validate(req.body,  { abortEarly: false });
   if (error) {
-    const errorMessage = error.details
+    const errors = error.details
       .map((details) => ({
         [details.context.key]: details.message.replace(/"/g, ''),
       }))
   
     throw new AppError(
       422,
-      errorMessage,
+      errors,
     );
   }
   Object.assign(req, value);
