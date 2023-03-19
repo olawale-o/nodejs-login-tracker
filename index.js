@@ -4,7 +4,6 @@ const config = require('./config');
 const port = config.get('port');
 const env = config.get('env');
 
-
 db.sequelize.sync()
   .then(() => {
     if (env !== 'test') {
