@@ -13,7 +13,7 @@ exports.register = async (req, res, next) => {
   
     if (isFound) {
       return res.status(400).json({
-        message: "Email already exists. Please login with your credentials."
+        message: "Email already exists. Please login with your credentials"
       });
     }
     const hashedPassword = await hashPassword(password);
@@ -28,7 +28,7 @@ exports.register = async (req, res, next) => {
       transformResponse({
         statusCode: 500,
         res,
-        message: "Something went wrong. Please try again."
+        message: "Something went wrong. Please try again"
       })
     }
     transformResponse({
@@ -51,7 +51,7 @@ exports.login = async (req, res, next) => {
       transformResponse({
         statusCode: 400,
         res,
-        message: "Invalid email or password."
+        message: "Invalid email or password"
       });
     }
     const isPasswordValid = await comparePassword(password, isFound.password);
@@ -63,7 +63,7 @@ exports.login = async (req, res, next) => {
         transformResponse({
         statusCode: 400,
         res,
-        message: "Your account will be locked for life."
+        message: "Your account will be locked for life"
       });
     }
 
@@ -92,7 +92,7 @@ exports.login = async (req, res, next) => {
       transformResponse({
         statusCode: 400,
         res,
-        message: "You cannot login at the momment."
+        message: "You cannot login at the momment"
       })
     }
 
@@ -105,7 +105,7 @@ exports.login = async (req, res, next) => {
         transformResponse({
           statusCode: 400,
           res,
-          message: "Your account has been locked for 1 minute."
+          message: "Your account has been locked for 1 minute"
         });
       } else {
         await db.User.update({
@@ -114,7 +114,7 @@ exports.login = async (req, res, next) => {
         transformResponse({
           statusCode: 400,
           res,
-          message: "Invalid email or password."
+          message: "Invalid email or password"
         })
       }
     }
@@ -127,7 +127,7 @@ exports.login = async (req, res, next) => {
     transformResponse({
       statusCode: 200,
       res,
-      message: "Login successful.",
+      message: "Login successful",
     })
 
   } catch (error) {
