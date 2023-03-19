@@ -1,6 +1,10 @@
+const config = require('../../config');
+
 const handleError = (err, res) => {
-  // sendCriticalErrorNotification()
-  console.error(err);
+  if (config.get('env') !== 'test') {
+    // sendCriticalErrorNotification()
+    console.error(err);
+  }
   
   if (!err.isOperational) {
     console.error('Shutting down the application...');
