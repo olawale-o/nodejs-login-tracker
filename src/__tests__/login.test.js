@@ -21,6 +21,11 @@ describe('POST /login', () => {
         email: 'wale@test.com',
         password: await hashPassword('password'),
       },
+      {
+        full_name: 'funke doe',
+        email: 'funke@test.com',
+        password: await hashPassword('password'),
+      },
     ];
     await db.User.bulkCreate(datas);
   });
@@ -191,6 +196,40 @@ describe('POST /login', () => {
       { statusCode: 400, message: 'Invalid email or password' },
       { statusCode: 400, message: 'Your account has been locked for 1 minute' },
       { statusCode: 400, message: 'Your account will be locked for life' },
+    ]);
+  });
+
+  test('should login after trying 2 invalid passwords and 1 valid password', async () => {
+    const datas = [
+      {
+        email: 'funke@test.com',
+        password: 'passwords',
+      },
+      {
+        email: 'funke@test.com',
+        password: 'passwords',
+      },
+      {
+        email: 'funke@test.com',
+        password: 'password',
+      }
+    ];
+    const status = [];
+    for (let i = 0; i < 3; i++) {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .set('Content-Type', 'application/json')
+        .send(datas[i]);
+      status.push({
+        statusCode: response.statusCode,
+        message: response.body.message,
+      });
+    }
+    expect(status).toHaveLength(3);
+    expect(status).toEqual([
+      { statusCode: 400, message: 'Invalid email or password' },
+      { statusCode: 400, message: 'Invalid email or password' },
+      { statusCode: 200, message: 'Login successful' },
     ]);
   });
 });
