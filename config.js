@@ -42,7 +42,12 @@ const config = convict({
       doc: 'Database port',
       format: 'port',
       default: 5432,
-    }
+    },
+    host: {
+      doc: 'Database host',
+      format: String,
+      default: 'localhost',
+    },
   },
 });
 
