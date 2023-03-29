@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "NODE_ENV=production nodemon index.js",
+    "dev": "nodemon index.js",
     "create:db:dev": "npx sequelize-cli db:create --env development --config ./src/config/config.js",
     "db:migrate:dev": "npx sequelize-cli db:migrate --env development --config ./src/config/config.js --migrations-path ./src/migrations",
     "db:drop:dev": "npx sequelize-cli db:drop --env development --config ./src/config/config.js",
