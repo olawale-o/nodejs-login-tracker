@@ -3,3 +3,4 @@ Dockerfile
 .dockerignore
 package-lock.json
 ./npm-debug.log
+README.md
