@@ -20,6 +20,14 @@
 ```bash
 npm install
 ```
+### Cretae development database
+```bash
+npm create:db:dev
+```
+### Migrate development database
+```bash
+npm migrate:db:dev
+```
 
 ### Usage
 ```bash
