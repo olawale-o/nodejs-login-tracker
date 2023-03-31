@@ -1,0 +1,12 @@
+{
+  "env": "test",
+  "port": 4000,
+  "db": {
+    "name": "auth_tracker_test",
+    "dialect": "mysql",
+    "username": "root",
+    "password": "",
+    "port": 3307,
+    "host": "dabase"
+  }
+}

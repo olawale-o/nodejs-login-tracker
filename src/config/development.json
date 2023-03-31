@@ -1,0 +1,11 @@
+{
+  "env": "development",
+  "port": 5000,
+  "db": {
+    "name": "auth_tracker",
+    "dialect": "postgres",
+    "username": "",
+    "password": "",
+    "host": ""
+  }
+}
