@@ -13,6 +13,7 @@ app.use(cookieParser());
 routeHandler(app);
 
 app.use(async (err, _req, res, _next) => {
+  console.log(err);
   await handleError(err, res);
 });
 
