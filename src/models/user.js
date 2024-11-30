@@ -43,6 +43,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         field: "next_unlock_time",
       },
+      lastActivity: {
+        type: DataTypes.DATE,
+        defaultValue: Date.now(),
+        field: "last_activity",
+        allowNull: true,
+      },
     },
     {
       sequelize,

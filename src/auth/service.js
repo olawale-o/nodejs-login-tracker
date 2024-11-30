@@ -17,7 +17,7 @@ const register = async (credentials) => {
   const hashedPassword = await hashPassword(password);
 
   const user = await db.User.create({
-    full_name: fullName,
+    fullName: fullName,
     email,
     password: hashedPassword,
   });
@@ -40,27 +40,27 @@ const login = async (credentials) => {
     throw new AppError(400, "Invalid email or password");
   }
 
-  if (isFound.next_unlock_time && moment().isBefore(isFound.next_unlock_time)) {
+  if (isFound.nextUnlockTime && moment().isBefore(isFound.nextUnlockTime)) {
     throw new AppError(400, "Your account is still locked");
   }
 
   const isPasswordValid = await comparePassword(password, isFound.password);
 
   if (!isPasswordValid) {
-    if (isFound.login_attempts >= 3) {
+    if (isFound.loginAttempts >= 3) {
       await db.User.update(
         {
-          is_locked: true,
-          next_unlock_time: moment().add(1, "minutes").valueOf(),
+          isLocked: true,
+          nextUnlockTime: moment().add(1, "minutes").valueOf(),
         },
         { where: { email } },
       );
       throw new AppError(400, "You cannot login at this time");
     }
-    isFound.login_attempts += 1;
+    isFound.loginAttempts += 1;
     await db.User.update(
       {
-        login_attempts: isFound.login_attempts,
+        loginAttempts: isFound.loginAttempts,
       },
       { where: { email } },
     );
@@ -72,9 +72,10 @@ const login = async (credentials) => {
 
   await db.User.update(
     {
-      login_attempts: 0,
-      is_locked: false,
-      next_unlock_time: null,
+      loginAttempts: 0,
+      isLocked: false,
+      nextUnlockTime: null,
+      lastActivity: new Date(),
     },
     { where: { email } },
   );
