@@ -10,20 +10,21 @@ exports.register = async (req, res, next) => {
       message: "User created successfully",
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
 exports.login = async (req, res, next) => {
   try {
-    await login(req.body);
+    const { accessToken, refreshToken } = await login(req.body);
+    res.cookie("accessToken", accessToken, { httpOnly: true, secure: true });
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true });
     transformResponse({
       statusCode: 200,
       res,
       message: "Login successful",
-    })
-
+    });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
