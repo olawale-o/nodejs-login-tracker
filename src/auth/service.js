@@ -3,6 +3,9 @@ const db = require("../models");
 const AppError = require("../common/app-error");
 const { hashPassword, comparePassword } = require("./helpers/password-helper");
 
+const LOCK_TIME = 1;
+const MAX_LOGIN_ATTEMPTS = 3;
+
 const register = async (credentials) => {
   const { email, fullName, password } = credentials;
   const isFound = await db.User.findOne({
@@ -47,11 +50,11 @@ const login = async (credentials) => {
   const isPasswordValid = await comparePassword(password, isFound.password);
 
   if (!isPasswordValid) {
-    if (isFound.loginAttempts >= 3) {
+    if (isFound.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
       await db.User.update(
         {
           isLocked: true,
-          nextUnlockTime: moment().add(1, "minutes").valueOf(),
+          nextUnlockTime: moment().add(LOCK_TIME, "minutes").valueOf(),
         },
         { where: { email } },
       );
@@ -75,7 +78,7 @@ const login = async (credentials) => {
       loginAttempts: 0,
       isLocked: false,
       nextUnlockTime: null,
-      lastActivity: new Date(),
+      lastActivity: moment(),
     },
     { where: { email } },
   );
