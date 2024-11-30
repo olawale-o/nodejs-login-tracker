@@ -1,15 +1,7 @@
-const moment = require("moment");
 const verifyToken = require("../common/verify-token");
 const AppError = require("../common/app-error");
 
-const IDLE_TIMEOUT = 15;
-
-const sessionExpired = async (req, res, next) => {
-  const now = moment();
-  const idleTime = now - new Date();
-};
-
-const authenticateToken = (req, _res, next) => {
+const authenticateToken = async (req, _res, next) => {
   const { accessToken } = req.cookies;
 
   if (!accessToken) {
@@ -21,10 +13,10 @@ const authenticateToken = (req, _res, next) => {
     if (!data) {
       throw new AppError(403, "Token verification failed 1");
     }
-    req.user = data;
+    req.data = data;
     next();
   } catch (e) {
-    throw new AppError(403, "Token verification failed 2");
+    next(new AppError(403, "Token verification failed"));
   }
 };
 
