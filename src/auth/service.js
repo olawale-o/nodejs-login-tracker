@@ -2,6 +2,7 @@ const moment = require("moment");
 const db = require("../models");
 const AppError = require("../common/app-error");
 const { hashPassword, comparePassword } = require("./helpers/password-helper");
+const { accessToken, refreshToken } = require("./helpers/jwt");
 
 const LOCK_TIME = 1;
 const MAX_LOGIN_ATTEMPTS = 3;
@@ -73,6 +74,15 @@ const login = async (credentials) => {
     );
   }
 
+  const tokenAccess = accessToken({ id: isFound.id });
+  const tokenRefresh = refreshToken({ id: isFound.id });
+
+  await db.Token.create({
+    accessToken: tokenAccess,
+    refreshToken: tokenRefresh,
+    user_id: isFound.id,
+  });
+
   await db.User.update(
     {
       loginAttempts: 0,
@@ -82,6 +92,10 @@ const login = async (credentials) => {
     },
     { where: { email } },
   );
+  return {
+    accessToken: tokenAccess,
+    refreshToken: tokenRefresh,
+  };
 };
 
 module.exports = {
