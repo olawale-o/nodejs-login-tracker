@@ -6,7 +6,8 @@ module.exports = (app) => {
   app.use(
     "/api/v1/protected",
     authenticateToken,
-    sessionExpired,
+    // sessionExpired,
     require("./protected"),
   );
+  app.use("/api/v1/token", require("./token"));
 };
