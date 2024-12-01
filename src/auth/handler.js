@@ -34,11 +34,14 @@ exports.login = async (req, res, next) => {
 exports.logout = async (req, res, next) => {
   try {
     const { refreshToken } = req.cookies;
-    const isTokenFound = await db.Token.findOne({ where: { refreshToken } });
-    if (!isTokenFound) {
+    const { id } = req.data;
+    const tokenFound = await db.Token.findOne({ where: { refreshToken } });
+    if (!tokenFound) {
       throw new AppError(403, "Token is invalid");
     }
-
+    if (tokenFound.user_id !== id) {
+      throw new AppError(403, "Ioken is invalid");
+    }
     await db.Token.destroy({ where: { refreshToken } });
 
     res.clearCookie("accessToken");

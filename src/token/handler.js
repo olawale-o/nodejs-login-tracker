@@ -44,3 +44,30 @@ exports.refresh = async (req, res, next) => {
     next(e);
   }
 };
+
+exports.version = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+      throw new AppError(401, "Token is required");
+    }
+    // it is assumed that the payload contains tokenVersion
+    const decoded = verifyToken(token, "REFRESH_TOKEN");
+
+    if (!decoded) {
+      throw new AppError(403, "Token verification failed");
+    }
+
+    const user = await db.User.findOne({ where: { id: decoded.id } });
+    if (user.tokenVersion !== decoded.tokenVersion) {
+      throw new AppError(403, "Token version is invalid");
+    }
+
+    await db.User.update(
+      { tokenVersion: user.tokenVersion++ },
+      { where: { id: decoded.id } },
+    );
+  } catch (e) {
+    next(e);
+  }
+};
