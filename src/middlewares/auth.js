@@ -1,4 +1,4 @@
-const verifyToken = require("../common/verify-token");
+const { verifyToken } = require("../common/jwt");
 const AppError = require("../common/app-error");
 
 const authenticateToken = async (req, _res, next) => {
