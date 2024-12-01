@@ -3,7 +3,7 @@ const {
   generateRefreshToken,
 } = require("../auth/helpers/auth-token");
 const AppError = require("../common/app-error");
-const verifyToken = require("../common/verify-token");
+const { verifyToken } = require("../common/jwt");
 const db = require("../models");
 
 exports.refresh = async (req, res, next) => {
