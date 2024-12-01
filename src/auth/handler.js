@@ -1,5 +1,7 @@
 const { register, login } = require("./service");
 const transformResponse = require("../common/transform-response");
+const db = require("../models");
+const AppError = require("../common/app-error");
 
 exports.register = async (req, res, next) => {
   try {
@@ -26,5 +28,23 @@ exports.login = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+exports.logout = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.cookies;
+    const isTokenFound = await db.Token.findOne({ where: { refreshToken } });
+    if (!isTokenFound) {
+      throw new AppError(403, "Token is invalid");
+    }
+
+    await db.Token.destroy({ where: { refreshToken } });
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (e) {
+    next(e);
   }
 };
