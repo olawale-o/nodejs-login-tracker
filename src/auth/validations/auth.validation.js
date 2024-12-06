@@ -1,5 +1,5 @@
-const Joi = require('joi');
-const AppError = require('../../common/app-error');
+const Joi = require("joi");
+const AppError = require("../../common/app-error");
 
 const registerSchema = Joi.object({
   fullName: Joi.string().required(),
@@ -12,26 +12,28 @@ const loginSchema = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
+const forgotPassword = Joi.object({
+  email: Joi.string().email().required(),
+});
+
 const validateRequestSchema = (schema) => (req, res, next) => {
-  const { value, error } = Joi.compile(schema).validate(req.body,  { abortEarly: false });
+  const { value, error } = Joi.compile(schema).validate(req.body, {
+    abortEarly: false,
+  });
   if (error) {
-    const errors = error.details
-      .map((details) => ({
-        [details.context.key]: details.message.replace(/"/g, ''),
-      }))
-  
-    throw new AppError(
-      422,
-      errors,
-    );
+    const errors = error.details.map((details) => ({
+      [details.context.key]: details.message.replace(/"/g, ""),
+    }));
+
+    throw new AppError(422, errors);
   }
   Object.assign(req, value);
   return next();
 };
 
-
 module.exports = {
   registerSchema,
   loginSchema,
-  validateRequestSchema
+  forgotPassword,
+  validateRequestSchema,
 };

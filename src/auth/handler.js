@@ -1,4 +1,4 @@
-const { register, login } = require("./service");
+const { register, login, forgotPassword, resetPassword } = require("./service");
 const transformResponse = require("../common/transform-response");
 const db = require("../models");
 const AppError = require("../common/app-error");
@@ -28,6 +28,35 @@ exports.login = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { token } = await forgotPassword(req.body);
+    transformResponse({
+      statusCode: 200,
+      res,
+      message: {
+        text: "Kindly check your mail for password reset instruction",
+        url: `http://localhost:5000/api/v1/auth/reset_password?token=${token}`,
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    await resetPassword({ query: req.query, body: req.body });
+    transformResponse({
+      statusCode: 200,
+      res,
+      message: "Password reset sucessfull",
+    });
+  } catch (e) {
+    next(e);
   }
 };
 

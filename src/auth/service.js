@@ -6,9 +6,11 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("./helpers/auth-token");
+const { generateToken } = require("../common/crypto");
 
 const LOCK_TIME = 1;
 const MAX_LOGIN_ATTEMPTS = 3;
+const PASSWORD_EXPIRES = 3;
 
 const register = async (credentials) => {
   const { email, fullName, password } = credentials;
@@ -101,7 +103,64 @@ const login = async (credentials) => {
   };
 };
 
+const forgotPassword = async (credentials) => {
+  const { email } = credentials;
+  const isFound = await db.User.findOne({
+    where: { email },
+  });
+
+  if (!isFound) {
+    throw new AppError(400, "Please provide a valid email address");
+  }
+
+  const token = generateToken();
+  await db.User.update(
+    {
+      resetPasswordToken: token,
+      resetPasswordExpires: moment().add(PASSWORD_EXPIRES, "minutes").valueOf(),
+    },
+    { where: { email } },
+  );
+
+  return { token };
+};
+
+const resetPassword = async (credentials) => {
+  const {
+    query: { token },
+    body: { password },
+  } = credentials;
+  const isFound = await db.User.findOne({
+    where: { resetPasswordToken: token },
+  });
+
+  if (!isFound) {
+    throw new AppError(401, "Please provide a valid token");
+  }
+
+  if (isFound.resetPasswordToken !== token) {
+    throw new AppError(401, "Please provide a valid token");
+  }
+
+  if (moment().isAfter(isFound.resetPasswordExpires)) {
+    throw new AppError(403, "Reset has expired");
+  }
+
+  const hashedPassword = await hashPassword(password);
+
+  await db.User.update(
+    {
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+      password: hashedPassword,
+    },
+    { where: { email: isFound.email } },
+  );
+};
+
 module.exports = {
   register,
   login,
+  forgotPassword,
+  resetPassword,
 };
