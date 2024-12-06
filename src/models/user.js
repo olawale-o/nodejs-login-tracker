@@ -61,6 +61,16 @@ module.exports = (sequelize, DataTypes) => {
         field: "last_activity",
         allowNull: true,
       },
+      resetPasswordToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: "reset_password_token",
+      },
+      resetPasswordExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: "reset_password_expires",
+      },
     },
     {
       sequelize,
