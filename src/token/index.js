@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { refresh } = require("./handler");
+const { refresh, version } = require("./handler");
 
 router.post("/", refresh);
 router.post("/version", version);

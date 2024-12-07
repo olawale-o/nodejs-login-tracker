@@ -6,9 +6,11 @@ const AppError = require("../common/app-error");
 const { verifyToken } = require("../common/jwt");
 const db = require("../models");
 
+// token refresh through new token generation
+// Refresh Tokens for Long-Lived Sessions
 exports.refresh = async (req, res, next) => {
   try {
-    const { refreshToken: token } = req.cookies;
+    const { refreshToken: token } = req.cookies; // or authourization header;
     if (!refreshToken) {
       throw new AppError(401, "Token is required");
     }
@@ -45,14 +47,17 @@ exports.refresh = async (req, res, next) => {
   }
 };
 
+// token refresh through version strategy
+// Token Versioning strategy
+// you cant refresh a token for this strategy
 exports.version = async (req, res, next) => {
   try {
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) {
+    const { token } = req.cookies; // or authourization header;
+    if (!token) {
       throw new AppError(401, "Token is required");
     }
     // it is assumed that the payload contains tokenVersion
-    const decoded = verifyToken(token, "REFRESH_TOKEN");
+    const decoded = verifyToken(token, "TOKEN_VERSION");
 
     if (!decoded) {
       throw new AppError(403, "Token verification failed");
@@ -62,11 +67,6 @@ exports.version = async (req, res, next) => {
     if (user.tokenVersion !== decoded.tokenVersion) {
       throw new AppError(403, "Token version is invalid");
     }
-
-    await db.User.update(
-      { tokenVersion: user.tokenVersion++ },
-      { where: { id: decoded.id } },
-    );
   } catch (e) {
     next(e);
   }
