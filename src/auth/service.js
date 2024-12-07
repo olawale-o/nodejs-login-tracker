@@ -5,6 +5,7 @@ const { hashPassword, comparePassword } = require("./helpers/password-helper");
 const {
   generateAccessToken,
   generateRefreshToken,
+  generateAccessTokenWithUserIdAndVersionId,
 } = require("./helpers/auth-token");
 const { generateToken } = require("../common/crypto");
 
@@ -79,8 +80,16 @@ const login = async (credentials) => {
     );
   }
 
+  // Refresh Tokens for Long-Lived Sessions strategy
   const accessToken = generateAccessToken({ id: isFound.id });
   const refreshToken = generateRefreshToken({ id: isFound.id });
+
+  // REPLACE ABOVE 2 TOKENs WITH THIS ONE FOR TOKEN VERSION STRATEGY
+  // put the token in cookies or authorization header
+  // const token = generateAccessTokenWithUserIdAndVersionId({
+  //   id: isFound.id,
+  //   tokenVersion: isFound.tokenVersion,
+  // });
 
   await db.Token.create({
     accessToken,
