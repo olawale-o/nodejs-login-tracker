@@ -26,25 +26,29 @@ const authenticateToken = async (req, _res, next) => {
 };
 
 const authenticateTokenByVersion = async (req, _res, next) => {
-  const { accessToken } = req.cookies;
+  const { token } = req.cookies; // or athourization header;
 
-  if (!accessToken) {
-    throw new AppError(401, "Access token is required");
+  if (!token) {
+    throw new AppError(401, "Token is required");
   }
 
   try {
-    const decoded = verifyToken(accessToken, "ACCESS_TOKEN");
+    const decoded = verifyToken(token, "ACCESS_TOKEN");
     if (!decoded) {
       throw new AppError(403, "Token verification failed 1");
     }
 
     // compare tokenVersion with the one in the database
-    const tokenVersion = await checkTokenVersion(decoded.tokenVersion);
+    const user = await checkTokenVersion(decoded.id);
 
-    if (tokenVersion !== decoded.tokenVersion) {
+    if (!user) {
+      throw new AppError(403, "Please provide valid credentials");
+    }
+
+    if (user.tokenVersion !== decoded.tokenVersion) {
       throw new AppError(403, "Token version is invalid");
     }
-    req.data = data;
+    req.data = decoded;
     next();
   } catch (e) {
     next(new AppError(403, "Token verification failed"));
