@@ -3,6 +3,13 @@ const transformResponse = require("../common/transform-response");
 const db = require("../models");
 const AppError = require("../common/app-error");
 
+const invalidateUserTokenVersion = async (userId) => {
+  await db.User.update(
+    { tokenVersion: user.tokenVersion++ },
+    { where: { id: userId } },
+  );
+};
+
 exports.register = async (req, res, next) => {
   try {
     await register(req.body);
@@ -71,11 +78,16 @@ exports.logout = async (req, res, next) => {
     if (tokenFound.user_id !== id) {
       throw new AppError(403, "Ioken is invalid");
     }
+
+    // use this if you are long live session token strategy
     await db.Token.destroy({ where: { refreshToken } });
 
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
     res.status(200).json({ message: "Logged out successfully" });
+
+    // uncomment below if you are using token version strateggy
+    // await invalidateUserTokenVersion(id)
   } catch (e) {
     next(e);
   }
