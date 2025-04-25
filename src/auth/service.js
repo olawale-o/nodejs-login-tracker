@@ -8,44 +8,35 @@ const {
   generateAccessTokenWithUserIdAndVersionId,
 } = require("./helpers/auth-token");
 const { generateToken } = require("../common/crypto");
+const { findByEmail, insertOne } = require("./orm");
 
 const LOCK_TIME = 1;
 const MAX_LOGIN_ATTEMPTS = 3;
 const PASSWORD_EXPIRES = 3;
 
+
 const register = async (credentials) => {
   const { email, fullName, password } = credentials;
-  const isFound = await db.User.findOne({
-    where: { email },
-  });
+  const isFound = await findByEmail({email})
   if (isFound) {
     throw new AppError(
       400,
       "Email already exists. Please login with your credentials",
     );
+    
   }
   const hashedPassword = await hashPassword(password);
-
-  const user = await db.User.create({
+  const user = await insertOne({
     fullName: fullName,
     email,
     password: hashedPassword,
-  });
-
-  if (!user) {
-    throw new AppError(
-      500,
-      "Something went wrong. Could not create user at this time. Please try again later",
-    );
-  }
+  })
   return user;
 };
 
 const login = async (credentials) => {
   const { email, password } = credentials;
-  const isFound = await db.User.findOne({
-    where: { email },
-  });
+  const isFound = await findByEmail({ email });
   if (!isFound) {
     throw new AppError(400, "Invalid email or password");
   }
@@ -114,10 +105,7 @@ const login = async (credentials) => {
 
 const forgotPassword = async (credentials) => {
   const { email } = credentials;
-  const isFound = await db.User.findOne({
-    where: { email },
-  });
-
+  const isFound = await findByEmail({ email });
   if (!isFound) {
     throw new AppError(400, "Please provide a valid email address");
   }
@@ -166,6 +154,8 @@ const resetPassword = async (credentials) => {
     { where: { email: isFound.email } },
   );
 };
+
+// const changePassword = asyn (credentials) => {}
 
 module.exports = {
   register,
