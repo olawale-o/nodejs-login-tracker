@@ -8,48 +8,48 @@ const {
   generateAccessTokenWithUserIdAndVersionId,
 } = require("./helpers/auth-token");
 const { generateToken } = require("../common/crypto");
-const { findByEmail, insertOne } = require("./orm");
+const { createUser } = require("./repository");
+const { authenticateUserByEmail, updateUser } = require("./repository");
+const UserDTO = require("./dto/dto");
 
 const LOCK_TIME = 1;
 const MAX_LOGIN_ATTEMPTS = 3;
 const PASSWORD_EXPIRES = 3;
 
-
 const register = async (credentials) => {
   const { email, fullName, password } = credentials;
-  const isFound = await findByEmail({email})
+  const isFound = await authenticateUserByEmail(email);
   if (isFound) {
     throw new AppError(
       400,
       "Email already exists. Please login with your credentials",
     );
-    
   }
   const hashedPassword = await hashPassword(password);
-  const user = await insertOne({
+  const user = await createUser({
     fullName: fullName,
     email,
     password: hashedPassword,
-  })
+  });
   return user;
 };
 
 const login = async (credentials) => {
   const { email, password } = credentials;
-  const isFound = await findByEmail({ email });
-  if (!isFound) {
+  const user = await authenticateUserByEmail(email);
+  if (!user) {
     throw new AppError(400, "Invalid email or password");
   }
 
-  if (isFound.nextUnlockTime && moment().isBefore(isFound.nextUnlockTime)) {
+  if (user.nextUnlockTime && moment().isBefore(user.nextUnlockTime)) {
     throw new AppError(400, "Your account is still locked");
   }
 
-  const isPasswordValid = await comparePassword(password, isFound.password);
+  const isPasswordValid = await comparePassword(password, user.password);
 
   if (!isPasswordValid) {
-    if (isFound.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-      await db.User.update(
+    if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+      await updateUser(
         {
           isLocked: true,
           nextUnlockTime: moment().add(LOCK_TIME, "minutes").valueOf(),
@@ -58,10 +58,10 @@ const login = async (credentials) => {
       );
       throw new AppError(400, "You cannot login at this time");
     }
-    isFound.loginAttempts += 1;
-    await db.User.update(
+    user.loginAttempts += 1;
+    await updateUser(
       {
-        loginAttempts: isFound.loginAttempts,
+        loginAttempts: user.loginAttempts,
       },
       { where: { email } },
     );
@@ -72,23 +72,23 @@ const login = async (credentials) => {
   }
 
   // Refresh Tokens for Long-Lived Sessions strategy
-  const accessToken = generateAccessToken({ id: isFound.id });
-  const refreshToken = generateRefreshToken({ id: isFound.id });
+  const accessToken = generateAccessToken({ id: user.id });
+  const refreshToken = generateRefreshToken({ id: user.id });
 
   // REPLACE ABOVE 2 TOKENs WITH THIS ONE FOR TOKEN VERSION STRATEGY
   // put the token in cookies or authorization header
   // const token = generateAccessTokenWithUserIdAndVersionId({
-  //   id: isFound.id,
-  //   tokenVersion: isFound.tokenVersion,
+  //   id: user.id,
+  //   tokenVersion: user.tokenVersion,
   // });
 
   await db.Token.create({
     accessToken,
     refreshToken,
-    user_id: isFound.id,
+    user_id: user.id,
   });
 
-  await db.User.update(
+  await updateUser(
     {
       loginAttempts: 0,
       isLocked: false,
@@ -100,12 +100,13 @@ const login = async (credentials) => {
   return {
     accessToken,
     refreshToken,
+    data: UserDTO.toDTO(user),
   };
 };
 
 const forgotPassword = async (credentials) => {
   const { email } = credentials;
-  const isFound = await findByEmail({ email });
+  const isFound = await authenticateUserByEmail(email);
   if (!isFound) {
     throw new AppError(400, "Please provide a valid email address");
   }
